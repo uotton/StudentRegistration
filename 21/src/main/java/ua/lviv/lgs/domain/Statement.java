@@ -1,54 +1,51 @@
 package ua.lviv.lgs.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "statement")
-public class Statement {
-	
+public class Statement implements Comparable<Statement> {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
-	
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "id")
-	private User user;
-	
-	@ManyToOne
-	@JoinColumn(name = "faculty_id", referencedColumnName = "id")
-	private Faculty faculty;
-	
-	@Enumerated(EnumType.STRING)
-	private Subjects subject;
-	
-	@Column
-	private double mark;
 
+	@Column(name = "user_id")
+	private Integer userId;
+
+	@Column(name = "faculty_id")
+	private Integer facultyId;
+
+	@ElementCollection
+	@Column(name = "statement_marks")
+	private List<Double> statementMarks;
+
+	@Transient
+	private boolean isAccepted;
+	
 	public Statement() {
 	}
 
-	public Statement(User user, Faculty faculty, Subjects subject, double mark) {
-		this.user = user;
-		this.faculty = faculty;
-		this.subject = subject;
-		this.mark = mark;
+	public Statement(Integer userId, Integer facultyId, List<Double> statementMarks) {
+		this.userId = userId;
+		this.facultyId = facultyId;
+		this.statementMarks = statementMarks;
 	}
 
-	public Statement(Integer id, User user, Faculty faculty, Subjects subject, double mark) {
+	public Statement(Integer id, Integer userId, Integer facultyId, List<Double> statementMarks) {
 		this.id = id;
-		this.user = user;
-		this.faculty = faculty;
-		this.subject = subject;
-		this.mark = mark;
+		this.userId = userId;
+		this.facultyId = facultyId;
+		this.statementMarks = statementMarks;
 	}
 
 	public Integer getId() {
@@ -59,49 +56,46 @@ public class Statement {
 		this.id = id;
 	}
 
-	public User getUser() {
-		return user;
+	public Integer getUserId() {
+		return userId;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 
-	public Faculty getFaculty() {
-		return faculty;
+	public Integer getFacultyId() {
+		return facultyId;
 	}
 
-	public void setFaculty(Faculty faculty) {
-		this.faculty = faculty;
+	public void setFacultyId(Integer facultyId) {
+		this.facultyId = facultyId;
 	}
 
-	public Subjects getSubject() {
-		return subject;
+	public List<Double> getStatementMarks() {
+		return statementMarks;
 	}
 
-	public void setSubject(Subjects subject) {
-		this.subject = subject;
+	public void setStatementMarks(List<Double> statementMarks) {
+		this.statementMarks = statementMarks;
 	}
 
-	public double getMark() {
-		return mark;
+	public boolean isAccepted() {
+		return isAccepted;
 	}
 
-	public void setMark(double mark) {
-		this.mark = mark;
+	public void setAccepted(boolean isAccepted) {
+		this.isAccepted = isAccepted;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((faculty == null) ? 0 : faculty.hashCode());
+		result = prime * result + ((facultyId == null) ? 0 : facultyId.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(mark);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		result = prime * result + ((subject == null) ? 0 : subject.hashCode());
-		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((statementMarks == null) ? 0 : statementMarks.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
 
@@ -114,31 +108,45 @@ public class Statement {
 		if (getClass() != obj.getClass())
 			return false;
 		Statement other = (Statement) obj;
-		if (faculty == null) {
-			if (other.faculty != null)
+		if (facultyId == null) {
+			if (other.facultyId != null)
 				return false;
-		} else if (!faculty.equals(other.faculty))
+		} else if (!facultyId.equals(other.facultyId))
 			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (Double.doubleToLongBits(mark) != Double.doubleToLongBits(other.mark))
-			return false;
-		if (subject != other.subject)
-			return false;
-		if (user == null) {
-			if (other.user != null)
+		if (statementMarks == null) {
+			if (other.statementMarks != null)
 				return false;
-		} else if (!user.equals(other.user))
+		} else if (!statementMarks.equals(other.statementMarks))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Statement [id=" + id + ", user=" + user + ", faculty=" + faculty + ", subject=" + subject
-				+ ", mark=" + mark + "]";
+		return "Statement [id=" + id + ", userId=" + userId + ", facultyId=" + facultyId + ", statementMarks="
+				+ statementMarks + ", isAccepted=" + isAccepted + "]";
+	}
+
+	@Override
+	public int compareTo(Statement statement) {
+		if ((statement.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()
+				- this.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()) > 0) {
+			return 1;
+		} else if ((statement.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()
+				- this.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()) < 0) {
+			return -1;
+		} else
+			return 0;
 	}
 }
+

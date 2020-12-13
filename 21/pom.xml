@@ -9,11 +9,11 @@
 		<version>2.1.8.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>EntrySystem</groupId>
-	<artifactId>EntrySystem</artifactId>
+	<groupId>project</groupId>
+	<artifactId>project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>EntrySystem</name>
-	<description>Project for registration of entrants to the faculty and creating their rating list</description>
+	<name>project</name>
+	<description></description>
 
 	<properties>
 		<java.version>1.8</java.version>
