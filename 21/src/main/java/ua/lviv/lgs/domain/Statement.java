@@ -2,50 +2,55 @@ package ua.lviv.lgs.domain;
 
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
 @Table(name = "statement")
-public class Statement implements Comparable<Statement> {
+public class Statement {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 
-	@Column(name = "user_id")
-	private Integer userId;
+	@ManyToOne
+	@JoinColumn(name = "user_id", referencedColumnName = "id")
+	private User user;
 
-	@Column(name = "faculty_id")
-	private Integer facultyId;
+	@ManyToOne
+	@JoinColumn(name = "faculty_id", referencedColumnName = "id")
+	private Faculty faculty;
 
 	@ElementCollection
-	@Column(name = "statement_marks")
-	private List<Double> statementMarks;
-
-	@Transient
-	private boolean isAccepted;
+	private List<Double> marks;
 	
+	@Transient
+	private String userEmail;
+	
+	@Transient
+	private Integer facultyId;
+
 	public Statement() {
 	}
 
-	public Statement(Integer userId, Integer facultyId, List<Double> statementMarks) {
-		this.userId = userId;
-		this.facultyId = facultyId;
-		this.statementMarks = statementMarks;
+	public Statement(User user, Faculty faculty, List<Double> marks) {
+		this.user = user;
+		this.faculty = faculty;
+		this.marks = marks;
 	}
 
-	public Statement(Integer id, Integer userId, Integer facultyId, List<Double> statementMarks) {
+	public Statement(Integer id, User user, Faculty faculty, List<Double> marks) {
 		this.id = id;
-		this.userId = userId;
-		this.facultyId = facultyId;
-		this.statementMarks = statementMarks;
+		this.user = user;
+		this.faculty = faculty;
+		this.marks = marks;
 	}
 
 	public Integer getId() {
@@ -56,12 +61,36 @@ public class Statement implements Comparable<Statement> {
 		this.id = id;
 	}
 
-	public Integer getUserId() {
-		return userId;
+	public User getUser() {
+		return user;
 	}
 
-	public void setUserId(Integer userId) {
-		this.userId = userId;
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public Faculty getFaculty() {
+		return faculty;
+	}
+
+	public void setFaculty(Faculty faculty) {
+		this.faculty = faculty;
+	}
+
+	public List<Double> getMarks() {
+		return marks;
+	}
+
+	public void setMarks(List<Double> marks) {
+		this.marks = marks;
+	}
+
+	public String getUserEmail() {
+		return userEmail;
+	}
+
+	public void setUserEmail(String userEmail) {
+		this.userEmail = userEmail;
 	}
 
 	public Integer getFacultyId() {
@@ -72,30 +101,14 @@ public class Statement implements Comparable<Statement> {
 		this.facultyId = facultyId;
 	}
 
-	public List<Double> getStatementMarks() {
-		return statementMarks;
-	}
-
-	public void setStatementMarks(List<Double> statementMarks) {
-		this.statementMarks = statementMarks;
-	}
-
-	public boolean isAccepted() {
-		return isAccepted;
-	}
-
-	public void setAccepted(boolean isAccepted) {
-		this.isAccepted = isAccepted;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((facultyId == null) ? 0 : facultyId.hashCode());
+		result = prime * result + ((faculty == null) ? 0 : faculty.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((statementMarks == null) ? 0 : statementMarks.hashCode());
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((marks == null) ? 0 : marks.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
 	}
 
@@ -108,45 +121,31 @@ public class Statement implements Comparable<Statement> {
 		if (getClass() != obj.getClass())
 			return false;
 		Statement other = (Statement) obj;
-		if (facultyId == null) {
-			if (other.facultyId != null)
+		if (faculty == null) {
+			if (other.faculty != null)
 				return false;
-		} else if (!facultyId.equals(other.facultyId))
+		} else if (!faculty.equals(other.faculty))
 			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (statementMarks == null) {
-			if (other.statementMarks != null)
+		if (marks == null) {
+			if (other.marks != null)
 				return false;
-		} else if (!statementMarks.equals(other.statementMarks))
+		} else if (!marks.equals(other.marks))
 			return false;
-		if (userId == null) {
-			if (other.userId != null)
+		if (user == null) {
+			if (other.user != null)
 				return false;
-		} else if (!userId.equals(other.userId))
+		} else if (!user.equals(other.user))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Statement [id=" + id + ", userId=" + userId + ", facultyId=" + facultyId + ", statementMarks="
-				+ statementMarks + ", isAccepted=" + isAccepted + "]";
-	}
-
-	@Override
-	public int compareTo(Statement statement) {
-		if ((statement.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()
-				- this.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()) > 0) {
-			return 1;
-		} else if ((statement.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()
-				- this.statementMarks.stream().reduce((x1, x2) -> x1 + x2).get()) < 0) {
-			return -1;
-		} else
-			return 0;
+		return "Statement [id=" + id + ", user=" + user + ", faculty=" + faculty + ", marks=" + marks + "]";
 	}
 }
-

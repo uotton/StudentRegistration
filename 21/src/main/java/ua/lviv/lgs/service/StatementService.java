@@ -14,8 +14,12 @@ public class StatementService {
 	@Autowired
 	private StatementRepository statementRepository;
 
-	public Statement save(Statement statement) {
-		return statementRepository.save(statement);
+	public void save(Statement statement) {
+		statementRepository.save(statement);
+	}
+
+	public Statement findById(Integer id) {
+		return statementRepository.findById(id).get();
 	}
 
 	public List<Statement> findAllStatements() {

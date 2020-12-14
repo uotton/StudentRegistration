@@ -1,12 +1,11 @@
 package ua.lviv.lgs.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +15,6 @@ import ua.lviv.lgs.domain.Faculty;
 import ua.lviv.lgs.domain.Statement;
 import ua.lviv.lgs.domain.User;
 import ua.lviv.lgs.service.FacultyService;
-import ua.lviv.lgs.service.RegisteredEntrantService;
 import ua.lviv.lgs.service.StatementService;
 import ua.lviv.lgs.service.UserService;
 
@@ -25,63 +23,45 @@ public class StatementController {
 
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
 	private FacultyService facultyService;
-	
-	@Autowired
-	private RegisteredEntrantService registeredEntrantService;
 
 	@Autowired
 	private StatementService statementService;
 
-	@RequestMapping(value = "/entrantSubmiting", method = RequestMethod.POST)
-	public ModelAndView entrantSubmiting(@RequestParam("facultyId") Integer facultyId,
-			@RequestParam("userId") Integer userId, @RequestParam("entrantId") Integer entrantId) {
+	@RequestMapping(value = "/entrantRegistration", method = RequestMethod.GET)
+	public ModelAndView showSubjects(@RequestParam("currentFacultyId") Integer currentFacultyId,
+			@RequestParam("currentUserEmail") String currentUserEmail) {
+		Faculty faculty = facultyService.findFacultyById(currentFacultyId);
+		User user = userService.findUserByEmail(currentUserEmail);
+
 		Statement statement = new Statement();
+		statement.setFaculty(faculty);
+		statement.setUser(user);
 
-		statement.setUserId(userId);
-		statement.setFacultyId(facultyId);
-		statement.setStatementMarks(new ArrayList<Double>(registeredEntrantService.findById(entrantId).getMarks()));
-
-		statementService.save(statement);
-
-		registeredEntrantService.deleteById(entrantId);
-
-		ModelAndView modelAndView = new ModelAndView("registeredEntrants");
-		modelAndView.addObject("registeredEntrants", registeredEntrantService.findAllRegisteredEntrants());
+		ModelAndView modelAndView = new ModelAndView("entrantRegistration");
+		modelAndView.addObject("statement", statement);
 		return modelAndView;
 	}
 
+	@RequestMapping(value = "/addMarks", method = RequestMethod.POST)
+	public ModelAndView registration(@Valid @ModelAttribute("statement") Statement statement,
+			BindingResult bindingResult) {
+		Faculty faculty = facultyService.findFacultyById(statement.getFacultyId());
+		User user = userService.findUserByEmail(statement.getUserEmail());
+
+		statement.setUser(user);
+		statement.setFaculty(faculty);
+		statementService.save(statement);
+
+		return new ModelAndView("redirect:/home");
+	}
+
 	@RequestMapping(value = "/rating", method = RequestMethod.GET)
-	public ModelAndView showRating(@RequestParam("currentFacultyId") Integer currentFacultyId) {
-
-		List<Statement> listOfAllStatements = statementService.findAllStatements();
-		Faculty currentFaculty = facultyService.findFacultyById(currentFacultyId);
-		
-		List<Statement> statementsOfCurrentFaculty = listOfAllStatements.stream().filter(s -> facultyService.findFacultyById(s.getFacultyId()).getName().equals(currentFaculty.getName())).collect(Collectors.toList());
-		
-		System.out.println("BEFORE sorting: " + statementsOfCurrentFaculty);
-		
-		Collections.sort(statementsOfCurrentFaculty);
-
-		statementsOfCurrentFaculty.stream().forEach(statement -> {
-			if (statementsOfCurrentFaculty.indexOf(statement) < facultyService.findFacultyById(currentFacultyId).getQuantityOfStudents())
-				statement.setAccepted(true);
-		});
-
-		System.out.println("After sorting and rating: " + statementsOfCurrentFaculty);
-
-		List<User> usersOfCurrentFaculty = statementsOfCurrentFaculty.stream().map(s -> userService.findUserById(s.getUserId())).collect(Collectors.toList());
-		List<Boolean> isUsersAccepted = statementsOfCurrentFaculty.stream().map(s -> s.isAccepted()).collect(Collectors.toList());
-		
-		
+	public ModelAndView showRating() {
 		ModelAndView modelAndView = new ModelAndView("rating");
-		modelAndView.addObject("statements", statementsOfCurrentFaculty);
-		modelAndView.addObject("users", usersOfCurrentFaculty);
-		modelAndView.addObject("faculty", currentFaculty);
-		modelAndView.addObject("accepting", isUsersAccepted);
-		
+		modelAndView.addObject("statements", statementService.findAllStatements());
 		return modelAndView;
 	}
 }

@@ -1,7 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-	pageEncoding="ISO-8859-1"%>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<%@taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <c:set var="contextPath" value="${pageContext.request.contextPath}" />
@@ -16,63 +13,68 @@
 <meta name="description" content="">
 <meta name="author" content="">
 
-<title>Registered Entrants</title>
+<title>Rating</title>
 
 <link href="${contextPath}/resources/css/bootstrap.min.css"
 	rel="stylesheet">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-
-<style>
-table {
-	margin-left: 20%;
-}
-table, th, td {
-	border: 1px solid black;
-	border-collapse: collapse;
-}
-th, td, h2 {
-	padding: 15px;
-	text-align: center;
-}
-</style>
 </head>
 
 <body>
-	<c:forEach var="element" items="${List1}" varStatus="status">
-		<p>${element}${List2[status.index]}
-	</c:forEach>
+	<!-- Sidebar -->
+	<div class="w3-sidebar w3-light-grey w3-bar-block" style="width: 10%">
+		<h3 class="w3-bar-item">Menu</h3>
+		<a href="/home" class="w3-bar-item w3-button">Home</a> <a
+			href="/create-faculty" class="w3-bar-item w3-button">Create
+			Faculty</a> <a href="/rating" class="w3-bar-item w3-button">Rating</a>
+	</div>
 
-	<h2>Rating of faculty with name ${faculty.name}</h2>
+	<!-- Page Content -->
+	<div style="margin-left: 10%">
+		<div class="w3-container w3-teal">
+			<h1>Rating</h1>
+		</div>
 
-	<c:if test="${not empty statements}">
+		<div class="container" style="margin-left: 1%">
+			<c:if test="${pageContext.request.userPrincipal.name != null}">
+				<form id="logoutForm" method="POST" action="${contextPath}/logout">
+					<input type="hidden" name="${_csrf.parameterName}"
+						value="${_csrf.token}" />
+				</form>
 
-		<table style="width: 60%">
-			<tr>
-				<th>First name</th>
-				<th>Second name</th>
-				<th colspan="4">Marks</th>
-				<th>Is Accepted?</th>
-			</tr>
-			<c:forEach items="${statements}" var="currentStatement"
-				varStatus="status">
+				<h2>
+					Welcome ${pageContext.request.userPrincipal.name} | <a
+						onclick="document.forms['logoutForm'].submit()">Logout</a>
+				</h2>
+			</c:if>
+		</div>
+
+		<c:if test="${not empty statements}">
+			<table>
 				<tr>
-					<td rowspan="2">${users[status.index].firstName}</td>
-					<td rowspan="2">${users[status.index].secondName}</td>
-
-					<c:forEach items="${faculty.subjects}" var="currentSubject">
-						<td>${currentSubject}</td>
-					</c:forEach>
-
-					<td rowspan="2">${accepting[status.index]}</td>
+					<th>First name</th>
+					<th>Second name</th>
+					<th>Email</th>
+					<th>Faculty name</th>
+					<th>Marks</th>
 				</tr>
-				<tr>
-					<c:forEach items="${currentStatement.statementMarks}"
-						var="currentStatementMark">
-						<td>${currentStatementMark}</td>
-					</c:forEach>
-				</tr>
-			</c:forEach>
-		</table>
-	</c:if>
+				<c:forEach items="${statements}" var="currentStatement">
+					<tr>
+						<td>${currentStatement.user.firstName}</td>
+						<td>${currentStatement.user.secondName}</td>
+						<td>${currentStatement.user.email}</td>
+						<td>${currentStatement.faculty.name}</td>
+
+						<td>${currentStatement.faculty.subjects}<br>${currentStatement.marks}</td>
+					</tr>
+				</c:forEach>
+			</table>
+		</c:if>
+	</div>
+
+	<script
+		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="${contextPath}/resources/js/bootstrap.min.js"></script>
 </body>
+
 </html>
